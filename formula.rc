@@ -1,0 +1,333 @@
+//Microsoft Developer Studio generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Chinese (P.R.C.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE LANG_CHINESE, SUBLANG_CHINESE_SIMPLIFIED
+#pragma code_page(936)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE DISCARDABLE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 4, 2\r\n"
+    "#pragma code_page(936)\r\n"
+    "#endif //_WIN32\r\n"
+    "#include ""res\\formula.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""l.chs\\afxres.rc""          // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON    DISCARDABLE     "res\\icon1.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOG DISCARDABLE  0, 0, 235, 55
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "关于小学数学生成器"
+FONT 9, "宋体"
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,11,17,20,20
+    LTEXT           "数学算式生成器 1.0 版",IDC_STATIC,40,16,119,8,
+                    SS_NOPREFIX
+    LTEXT           "版权所有 Shagpg Liao (C) 2018",IDC_STATIC,40,31,119,8
+    DEFPUSHBUTTON   "确定",IDOK,178,7,50,14,WS_GROUP
+END
+
+IDD_FORMULA_DIALOG DIALOGEX 0, 0, 232, 235
+STYLE DS_MODALFRAME | WS_MINIMIZEBOX | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
+    WS_SYSMENU
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "小学数学算式生成器"
+FONT 9, "宋体"
+BEGIN
+    DEFPUSHBUTTON   "开始",IDOK,47,214,50,14
+    PUSHBUTTON      "退出",IDCANCEL,137,214,50,14
+    COMBOBOX        IDC_COMBO_MAX_NUM,45,87,28,81,CBS_DROPDOWNLIST | 
+                    WS_VSCROLL | WS_TABSTOP
+    LTEXT           "以内加法",IDC_STATIC,73,90,33,8
+    EDITTEXT        IDC_NUM_OF_FORMULA,59,19,54,14,ES_AUTOHSCROLL
+    LTEXT           "出题数量：",IDC_STATIC,19,22,40,8
+    CONTROL         "+",IDC_CHECK_ADD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,
+                    24,88,20,10
+    CONTROL         "-",IDC_CHECK_MINUS,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,132,88,20,10
+    CONTROL         "x",IDC_CHECK_MULTIPLE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,24,121,20,10
+    CONTROL         "÷",IDC_CHECK_DEVIDE,"Button",BS_AUTOCHECKBOX | 
+                    WS_TABSTOP,132,121,19,10
+    GROUPBOX        "基本信息",IDC_STATIC,10,8,212,59
+    LTEXT           "每行题数：",IDC_STATIC,19,38,40,8
+    EDITTEXT        IDC_FORMULA_PER_LINE,59,36,54,14,ES_AUTOHSCROLL
+    LTEXT           "每页题数：",IDC_STATIC,123,37,41,8
+    EDITTEXT        IDC_FORMULA_PER_PAGE,165,35,54,14,ES_AUTOHSCROLL
+    GROUPBOX        "出题类型",IDC_STATIC,11,71,211,79
+    GROUPBOX        "",IDC_STATIC,19,81,93,33
+    COMBOBOX        IDC_COMBO_MAX_NUM_MINUS,155,87,28,81,CBS_DROPDOWNLIST | 
+                    WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "以内减法",IDC_STATIC,183,90,33,8
+    COMBOBOX        IDC_COMBO_MAX_NUM_MULTIPLE,45,120,28,81,CBS_DROPDOWNLIST | 
+                    WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "以内乘法",IDC_STATIC,73,121,33,8
+    GROUPBOX        "",IDC_STATIC,19,113,93,22
+    COMBOBOX        IDC_COMBO_MAX_NUM_DIV,155,120,28,81,CBS_DROPDOWNLIST | 
+                    WS_DISABLED | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "以内除法",IDC_STATIC,183,121,33,8
+    GROUPBOX        "",IDC_STATIC,126,113,93,33
+    GROUPBOX        "",IDC_STATIC,126,81,93,33
+    CONTROL         "是否计数",IDC_CHECK_NUMBER_NEEDED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,20,52,48,10
+    CONTROL         "每页重新计数",IDC_IS_NUM_RESTART,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,76,52,64,10
+    CONTROL         "包含进位加法",IDC_IS_ADD_SHIFT_INCLUDED,"Button",
+                    BS_AUTOCHECKBOX | WS_TABSTOP,24,101,64,10
+    CONTROL         "包含退位减法",IDC_IS_INCLUDE_ABDICATE,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,132,102,64,10
+    GROUPBOX        "出题方式",IDC_STATIC,10,153,211,30
+    CONTROL         "计算题",IDC_IS_EQUATION,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP | WS_TABSTOP,13,167,38,10
+    CONTROL         "第一空",IDC_IS_FILL_FIRST_NUM,"Button",
+                    BS_AUTORADIOBUTTON,56,167,40,10
+    CONTROL         "第二空",IDC_IS_FILL_SENCOND_NUM,"Button",
+                    BS_AUTORADIOBUTTON,98,167,40,10
+    CONTROL         "第三空",IDC_IS_FILL_THIRD_NUM,"Button",
+                    BS_AUTORADIOBUTTON | WS_DISABLED,143,167,40,10
+    CONTROL         "随机",IDC_IS_FILL_RADOM_NUM,"Button",BS_AUTORADIOBUTTON,
+                    188,167,29,10
+    GROUPBOX        "保存格式",IDC_STATIC,10,185,212,24
+    CONTROL         "EXCEL表格",IDC_IS_EXCEL,"Button",BS_AUTORADIOBUTTON | 
+                    WS_DISABLED | WS_GROUP,15,196,52,10
+    CONTROL         "WORD文档",IDC_IS_WORD,"Button",BS_AUTORADIOBUTTON,70,
+                    196,48,10
+    CONTROL         "TXT文本",IDC_IS_TXT,"Button",BS_AUTORADIOBUTTON,121,196,
+                    44,10
+    CONTROL         "HTML网页",IDC_RADIO_HTML,"Button",BS_AUTORADIOBUTTON,
+                    168,196,48,10
+    CONTROL         "竖式排列",IDC_IS_VERTICAL,"Button",BS_AUTOCHECKBOX | 
+                    WS_DISABLED | WS_TABSTOP,149,52,48,10
+    LTEXT           "几个数字：",IDC_STATIC,123,22,41,8
+    COMBOBOX        IDC_COMBO_NUM_OF_OPERATORS,165,19,54,57,CBS_DROPDOWNLIST | 
+                    CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "整除",IDC_IS_NO_REMINDER,"Button",BS_AUTORADIOBUTTON | 
+                    WS_DISABLED | WS_GROUP,130,134,32,10
+    CONTROL         "可以有余数",IDC_IS_HAS_REMINDER,"Button",
+                    BS_AUTORADIOBUTTON | WS_DISABLED,163,134,53,10
+    CONTROL         "是否带括号优先级",IDC_CHECK_BRACKET,"Button",
+                    BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,24,137,80,10
+    GROUPBOX        "",IDC_STATIC,19,132,93,17
+END
+
+
+#ifndef _MAC
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "080404B0"
+        BEGIN
+            VALUE "CompanyName", "\0"
+            VALUE "FileDescription", "formula Microsoft 基础类应用程序\0"
+            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "InternalName", "formula\0"
+            VALUE "LegalCopyright", "版权所有 (C) 2018\0"
+            VALUE "LegalTrademarks", "\0"
+            VALUE "OriginalFilename", "formula.EXE\0"
+            VALUE "ProductName", "formula 应用程序\0"
+            VALUE "ProductVersion", "1, 0, 0, 1\0"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x804, 1200
+    END
+END
+
+#endif    // !_MAC
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO DISCARDABLE 
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 228
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 48
+    END
+
+    IDD_FORMULA_DIALOG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 225
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 228
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_FORMULA_DIALOG DLGINIT
+BEGIN
+    IDC_COMBO_MAX_NUM, 0x403, 5, 0
+0x3031, 0x2030, "\000" 
+    IDC_COMBO_MAX_NUM, 0x403, 4, 0
+0x3035, 0x0020, 
+    IDC_COMBO_MAX_NUM, 0x403, 4, 0
+0x3032, 0x0020, 
+    IDC_COMBO_MAX_NUM, 0x403, 4, 0
+0x3031, 0x0020, 
+    IDC_COMBO_MAX_NUM, 0x403, 3, 0
+0x2035, "\000" 
+    IDC_COMBO_MAX_NUM_MINUS, 0x403, 5, 0
+0x3031, 0x2030, "\000" 
+    IDC_COMBO_MAX_NUM_MINUS, 0x403, 4, 0
+0x3035, 0x0020, 
+    IDC_COMBO_MAX_NUM_MINUS, 0x403, 4, 0
+0x3032, 0x0020, 
+    IDC_COMBO_MAX_NUM_MINUS, 0x403, 4, 0
+0x3031, 0x0020, 
+    IDC_COMBO_MAX_NUM_MINUS, 0x403, 3, 0
+0x2035, "\000" 
+    IDC_COMBO_MAX_NUM_MULTIPLE, 0x403, 5, 0
+0x3031, 0x2030, "\000" 
+    IDC_COMBO_MAX_NUM_MULTIPLE, 0x403, 4, 0
+0x3035, 0x0020, 
+    IDC_COMBO_MAX_NUM_MULTIPLE, 0x403, 4, 0
+0x3032, 0x0020, 
+    IDC_COMBO_MAX_NUM_MULTIPLE, 0x403, 4, 0
+0x3031, 0x0020, 
+    IDC_COMBO_MAX_NUM_MULTIPLE, 0x403, 3, 0
+0x2035, "\000" 
+    IDC_COMBO_MAX_NUM_DIV, 0x403, 5, 0
+0x3031, 0x2030, "\000" 
+    IDC_COMBO_MAX_NUM_DIV, 0x403, 4, 0
+0x3035, 0x0020, 
+    IDC_COMBO_MAX_NUM_DIV, 0x403, 4, 0
+0x3032, 0x0020, 
+    IDC_COMBO_MAX_NUM_DIV, 0x403, 4, 0
+0x3031, 0x0020, 
+    IDC_COMBO_MAX_NUM_DIV, 0x403, 3, 0
+0x2035, "\000" 
+    IDC_COMBO_NUM_OF_OPERATORS, 0x403, 2, 0
+0x0032, 
+    IDC_COMBO_NUM_OF_OPERATORS, 0x403, 2, 0
+0x0033, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE DISCARDABLE 
+BEGIN
+    IDS_ABOUTBOX            "关于 formula(&A)..."
+END
+
+#endif    // Chinese (P.R.C.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_CHS)
+#ifdef _WIN32
+LANGUAGE 4, 2
+#pragma code_page(936)
+#endif //_WIN32
+#include "res\formula.rc2"  // non-Microsoft Visual C++ edited resources
+#include "l.chs\afxres.rc"          // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
