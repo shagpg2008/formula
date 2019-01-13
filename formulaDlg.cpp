@@ -258,7 +258,7 @@ void CFormulaDlg::OnCheckDevide()
 	UpdateData();
 	GetDlgItem(IDC_COMBO_MAX_NUM_DIV)->EnableWindow(m_isDevide);
 	GetDlgItem(IDC_IS_NO_REMINDER)->EnableWindow(m_isDevide);
-	GetDlgItem(IDC_IS_HAS_REMINDER)->EnableWindow(m_isDevide && (atoi(m_numOfOperatorStr)>2?FALSE:TRUE));
+	GetDlgItem(IDC_IS_HAS_REMINDER)->EnableWindow(m_isDevide);
 }
 
 void CFormulaDlg::OnCheckNumberNeeded() 
@@ -273,7 +273,7 @@ void CFormulaDlg::OnSelchangeComboNumOfOperators()
 	BOOL isTrue = atoi(m_numOfOperatorStr)>2?TRUE:FALSE;
 	GetDlgItem(IDC_IS_FILL_THIRD_NUM)->EnableWindow(isTrue);
 	GetDlgItem(IDC_CHECK_BRACKET)->EnableWindow(isTrue);
-	GetDlgItem(IDC_IS_HAS_REMINDER)->EnableWindow(m_isDevide && !isTrue);
+	//GetDlgItem(IDC_IS_HAS_REMINDER)->EnableWindow(m_isDevide && !isTrue);
 
 	if(m_divReminderNum == 1) {	
 		m_divReminderNum = 0;
@@ -640,7 +640,7 @@ void CFormulaDlg::OnOK()
 
 	core_init_operator(m_isAdd, m_isMinus, m_isMultiple, m_isDevide);
 	core_init_maxnum(atoi(m_maxNumStr), atoi(m_MaxNumOfMinus), atoi(m_MaxNumOfMultiple), atoi(m_MaxNumOfDiv));
-	core_init_misc(atoi(m_numOfOperatorStr)==3, m_isAddShiftIncluded, m_isIncludeAbdicate, m_divReminderNum == 1);
+	core_init_misc(atoi(m_numOfOperatorStr)==3, m_isAddShiftIncluded, m_isIncludeAbdicate, m_divReminderNum == 1, m_isBracketPriority);
 	
 	getFileName(szFileName, MAX_PATH);
 

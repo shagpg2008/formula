@@ -13,7 +13,7 @@
 
 #define GET_0_N(n) (n)==0?0:(rand()%(n))
 
-static char isThreeNumbers = 0, isAddShift = 0, isAbdicate = 0, hasReminder = 0;
+static char isThreeNumbers = 0, isAddShift = 0, isAbdicate = 0, hasReminder = 0, hasBracketPriority = 0;
 static char numOfOperators = 0;
 static char operators[MAX_OPERATOR] = {0};
 static unsigned int maxNums[MAX_OPERATOR+1] = {0};
@@ -49,12 +49,13 @@ void core_init_maxnum(unsigned int maxNumOfAdd, unsigned int maxNumOfMinus, unsi
 	maxNums[OP_DEVIDE] = maxNumOfDevide;
 }
 
-void core_init_misc(int _isThreeNumbers, int _isAddShift, int _isAbdicate, int _hasReminder)
+void core_init_misc(int _isThreeNumbers, int _isAddShift, int _isAbdicate, int _hasReminder, int _hasBracketPriority)
 {
 	isThreeNumbers = (char)_isThreeNumbers;
 	isAddShift = (char)_isAddShift;
 	isAbdicate = (char)_isAbdicate;
 	hasReminder = (char)_hasReminder;
+	hasBracketPriority = (char)_hasBracketPriority;
 }
 
 static unsigned int getNum(unsigned int max)
@@ -170,20 +171,77 @@ void getTitle(char *szTitle, int len)
 //-´øÀ¨ºÅÃ»ÓÐ
 void genAnFormula(char *buff, int len, int blankN)
 {
-	const char *lpRack = "(   )";
+	const char *lpRack = "(¡¡¡¡)";
 	char op = getOp(), op2;
 	unsigned int num1 = getNum(maxNums[operators[op]]);
 	unsigned int num2 = getOpNum(maxNums[operators[op]], &num1, op);
 	unsigned int num3 = 0, result = getResult(num1, num2, op);
+	unsigned int reminder = 0, hasReminderInThisFormula = 0, hasBracketPriorityInThisFormula = 0, priorityN = 0;
 	char num1Str[8] = {0};
 	char num2Str[8] = {0};
 	char num3Str[8] = {0};
 	char resStr[8]  = {0};
 
-	if(isThreeNumbers) {
+	if(hasReminder && operators[op] == OP_DEVIDE) {
+		reminder = GET_0_N(num2);
+		hasReminderInThisFormula = (reminder % 2);
+		if(hasReminderInThisFormula) {
+			num1 += reminder;
+		}
+	} 
+	
+	if(!hasReminderInThisFormula && isThreeNumbers) {
 		unsigned int max = 0;
 		op2 = getOp();
+
+		if(hasBracketPriority){
+			priorityN = rand();
+			hasBracketPriorityInThisFormula = (priorityN % 2);
+			priorityN %= 101;
+			priorityN %= 2;
+		}
+	
 		max = maxNums[operators[op2]];
+		if(hasBracketPriorityInThisFormula) {
+			unsigned int tmp = result;
+			num3 = getOpNum(max, &tmp, op2);
+
+			if(priorityN == 0) {
+				if(operators[op2] == OP_DEVIDE && tmp > result) {
+					if(operators[op] == OP_ADD || operators[op] == OP_MINUS) {
+						num1 += tmp - result;
+					}else{
+						num1 *= tmp - result;
+					}
+				}
+
+				result = getResult(tmp, num3, op2);
+			} else {
+				if(operators[op2] == OP_DEVIDE) {
+					num2 = tmp;
+				}
+
+				result = getResult(num2, num3, op2);
+
+				if(result == 0 && operators[op] == OP_DEVIDE) {
+					num2 = 1;
+					if(operators[op2] == OP_ADD || operators[op2] == OP_MINUS) {
+						num3 = 0;
+					} else {
+						num3 = 1;
+					}
+
+					result = getResult(num2, num3, op2);
+				}
+
+				if(operators[op] == OP_MINUS && num1 < result) {
+					num1 += result;
+				}
+
+				result = getResult(num1, result, op);
+			}
+		}else
+
 		switch(operators[op2]) {
 			case OP_ADD: {
 				if(max <  result) {
@@ -219,7 +277,10 @@ void genAnFormula(char *buff, int len, int blankN)
 					result = getResult(num2, num3, op2);
 					result = getResult(num1, result, op);
 				}else{
-					num3 = getOpNum(maxNums[OP_DEVIDE], &result, op2);
+					unsigned int tmp =  result;
+					num3 = getOpNum(maxNums[OP_DEVIDE], &tmp, op2);
+					num1 *= num3;
+					result = getResult(num1, num2, op);
 					result = getResult(result, num3, op2);
 				}
 				break;
@@ -231,21 +292,59 @@ void genAnFormula(char *buff, int len, int blankN)
 		blankN = rand()%(3+isThreeNumbers);
 	}
 
-	if(isThreeNumbers) {
-		_snprintf(buff, len, "%s %s %s %s %s = %s", 
-			blankN==1?lpRack:itoa(num1, num1Str, 10),
-			getOpStr(op),
-			blankN==2?lpRack:itoa(num2, num2Str, 10),
-			getOpStr(op2),
-			blankN==3?lpRack:itoa(num3, num3Str, 10),
-			blankN==0?lpRack:itoa(result, resStr, 10)
-		);
+	if(!hasReminderInThisFormula) {
+		if(result == 0 
+			&& ((operators[op] == OP_MULTI || operators[op] == OP_DEVIDE) 
+				&& (!isThreeNumbers || (operators[op2] == OP_MULTI || operators[op2] == OP_DEVIDE)))) {
+			blankN = 0;
+		}
+		
+		if(isThreeNumbers) {
+			if(hasBracketPriorityInThisFormula) {
+				if(priorityN == 0) {
+					_snprintf(buff, len, "(%s %s %s) %s %s = %s", 
+						blankN==1?lpRack:itoa(num1, num1Str, 10),
+						getOpStr(op),
+						blankN==2?lpRack:itoa(num2, num2Str, 10),
+						getOpStr(op2),
+						blankN==3?lpRack:itoa(num3, num3Str, 10),
+						blankN==0?lpRack:itoa(result, resStr, 10)
+					);
+				} else {
+					_snprintf(buff, len, "%s %s (%s %s %s) = %s", 
+						blankN==1?lpRack:itoa(num1, num1Str, 10),
+						getOpStr(op),
+						blankN==2?lpRack:itoa(num2, num2Str, 10),
+						getOpStr(op2),
+						blankN==3?lpRack:itoa(num3, num3Str, 10),
+						blankN==0?lpRack:itoa(result, resStr, 10)
+					);
+				}
+			} else {
+				_snprintf(buff, len, "%s %s %s %s %s = %s", 
+					blankN==1?lpRack:itoa(num1, num1Str, 10),
+					getOpStr(op),
+					blankN==2?lpRack:itoa(num2, num2Str, 10),
+					getOpStr(op2),
+					blankN==3?lpRack:itoa(num3, num3Str, 10),
+					blankN==0?lpRack:itoa(result, resStr, 10)
+				);
+			}
+		} else {
+			_snprintf(buff, len, "%s %s %s = %s", 
+				blankN==1?lpRack:itoa(num1, num1Str, 10),
+				getOpStr(op),
+				blankN==2?lpRack:itoa(num2, num2Str, 10),
+				blankN==0?lpRack:itoa(result, resStr, 10)
+			);
+		}
 	} else {
-		_snprintf(buff, len, "%s %s %s = %s", 
-			blankN==1?lpRack:itoa(num1, num1Str, 10),
-			getOpStr(op),
-			blankN==2?lpRack:itoa(num2, num2Str, 10),
-			blankN==0?lpRack:itoa(result, resStr, 10)
+		_snprintf(buff, len, "%s %s %s = %sÓà%s", 
+				blankN==1?lpRack:itoa(num1, num1Str, 10),
+				getOpStr(op),
+				blankN==2?lpRack:itoa(num2, num2Str, 10),
+				blankN==0?lpRack:itoa(result, resStr, 10),
+				blankN==0?lpRack:itoa(reminder, num3Str, 10)
 		);
 	}
 }
