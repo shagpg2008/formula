@@ -96,7 +96,7 @@ CFormulaDlg::CFormulaDlg(CWnd* pParent /*=NULL*/)
 	m_isIncludeAbdicate = FALSE;
 	m_isNumRestartPerPage = FALSE;
 	m_isVertical = FALSE;
-	m_fileFormat = FT_HTML;
+	m_fileFormat = FT_WORD;
 	m_whichNumBlank = 0;
 	m_divReminderNum = 0;
 	m_isBracketPriority = FALSE;
@@ -441,176 +441,136 @@ void CFormulaDlg::writeFormulaToWordFile(int maxOfFormula, LPSTR lpszFileName, i
          AfxMessageBox("Initialize COM context failed!");
          return ;
     }
-    // TODO: Add your control notification handler code here
-	_Application wordApp;
 
-	Documents wordDocs;//创建一个新的word文档
-	_Document wordDoc;
+	char buff[256] = {0};
+	map<string, int> formulaMap;
+	map<string, int>::iterator it;
+	int numOfFormulaPerLine = atoi(m_numOfFormulaPerLine);
+	int numOfFormulaPerPage = atoi(m_numOfFormulaPerPage);
+	strncat(lpszFileName, ".doc", maxFileNameLen);
+	CString msg = _T("");
 
-	Selection wordSelection;
+	getTitle(buff, sizeof(buff));
 
-	Range wordRange;//
+    _Application app;  
+	COleVariant vTrue((short)TRUE), vFalse((short)FALSE),vOpt((long)DISP_E_PARAMNOTFOUND, VT_ERROR);  
+	app.CreateDispatch(_T("Word.Application"));  
+	app.SetVisible(FALSE);  
+	//Create New Doc  
+	Documents docs=app.GetDocuments();  
+	CComVariant tpl(_T("")),Visble,DocType(0),NewTemplate(false);  
+	docs.Add(&tpl,&NewTemplate,&DocType,&Visble);  
+	Selection sel=app.GetSelection();  
 
-	Tables wordTables;
-	Table wordTable; 
+	//Add Table  
+	_Document saveDoc=app.GetActiveDocument();  
+	Tables tables=saveDoc.GetTables();  
+	CComVariant defaultBehavior(1),AutoFitBehavior(1);  
+	Table table = tables.Add(sel.GetRange(),(numOfFormulaPerPage+numOfFormulaPerLine-1)/numOfFormulaPerLine,numOfFormulaPerLine,&defaultBehavior,&AutoFitBehavior);  
+	
+	//Table table=tables.Item(1);  
+	Borders borders = table.GetBorders();
+	borders.SetEnable(FALSE);
+	Rows rows = table.GetRows();
+	rows.SetHeight(app.InchesToPoints((float)0.35), 2);
+	rows.ReleaseDispatch();
 
-	Cell wordCell;    
-	Cells wordCells;
-	//Paragraphs wordParagraphs;
-	//Paragraph wordParagraph;
-	_Font wordFont;
-	Shading wordShading;
-	//
-	int nRow=0;
-	//
-	COleVariant  vTrue((short)TRUE),
-				vFalse((short)FALSE),
-				vOpt((long)DISP_E_PARAMNOTFOUND, VT_ERROR);
+	for(int index = 0, row = 1, col = 1; index < maxOfFormula; index ++, msg = "") {
+		BOOL isNeedPageBreak = (index == (maxOfFormula - 1)) || (numOfFormulaPerPage == 0) || (index % numOfFormulaPerPage) != (numOfFormulaPerPage - 1)?FALSE:TRUE;
+		int lineNum = index + 1;
+		genAnFormula(buff, sizeof(buff), m_whichNumBlank);
 
-	CComVariant defaultBehavior(1),AutoFitBehavior(0);
+		if((it=formulaMap.find(buff)) != formulaMap.end()) {
+			if(index - (it->second) <= 20) {
+				index--;
+				continue;
+			}
+			it->second = index;
+		} else {
+			formulaMap[buff] = index;
+		}
 
-	//创建word application实例
-	if (!wordApp.CreateDispatch(_T("Word.Application")))
-	{
-		  AfxMessageBox("Word CreateDispatch Failed!");
-		  return ;
-	}    
+		if(m_isNumberNeeded ) {
+			if(m_isNumRestartPerPage) {
+				lineNum = (index % numOfFormulaPerPage) + 1;
+			}
+			char lineBuff[8] = {0};
+			msg += itoa(lineNum, lineBuff, 10);
+			msg += _T(". ");
+		}
 
-	wordApp.SetVisible(true);//make visible
-	wordApp.Activate();//激活
-	wordDocs=wordApp.GetDocuments();//get documents object
+		msg += buff;
+		sel.TypeText(msg);
+		sel.MoveRight(COleVariant((short)1),COleVariant(short(1)),COleVariant(short(0)));
+		
+		if(isNeedPageBreak) {
+			borders.ReleaseDispatch();
+			table.ReleaseDispatch();
+			sel.TypeText(" ");
+			sel.InsertBreak(vTrue); 
+			table=tables.Add(sel.GetRange(),(numOfFormulaPerPage+numOfFormulaPerLine-1)/numOfFormulaPerLine,numOfFormulaPerLine,&defaultBehavior,&AutoFitBehavior);
+			borders = table.GetBorders();
+			borders.SetEnable(FALSE);
+			Rows rows = table.GetRows();
+			rows.SetHeight(app.InchesToPoints((float)0.35), 2);
+			rows.ReleaseDispatch();
+			formulaMap.clear();
+		}
+	}
 
-	//
-	CString strDocTemplate;
-	CString strPath;
+	Paragraph para = sel.GetParagraphs();
+//	Fields fields;
 
-	char szFullPath[_MAX_PATH];
-	::GetModuleFileName(NULL,szFullPath,_MAX_PATH);
-	strDocTemplate.Format("%s",szFullPath);
+	Window   mWindowActive = app.GetActiveWindow();;
+	Pane   mPane = mWindowActive.GetActivePane();
+	View   mViewActive = mPane.GetView(); 
+	mViewActive.SetSeekView(9);   //设置页眉视图
+	getTitle(buff, sizeof(buff));
+	
+	_Font font(sel.GetFont());
+	font.SetSize(15);
+	font.SetColor(RGB(0,0,0));
+	sel.TypeText(buff);
+	para.SetAlignment(1);   //居中
+	sel.TypeParagraph();
+	font.SetSize(9);
+	sel.TypeText("用时_______ 得分_______");
+	para.SetAlignment(2);   //居右
+	font.SetSize(7);
 
-	int nPos=strDocTemplate.ReverseFind('""');
-	strDocTemplate=strDocTemplate.Left(nPos);
-	strPath=strDocTemplate;
-	TRACE1("%s\n",strDocTemplate);
-	CComVariant tpl(_T("")),Visble,DocType(0),NewTemplate(false);
-	wordDoc=wordDocs.Add(&tpl,&NewTemplate,&DocType,&Visble);
-	wordSelection=wordApp.GetSelection();
-	wordTables=wordDoc.GetTables();
+	mViewActive.SetSeekView(10);   //设置页脚视图
+	//sel.TypeText("- ");
+	//fields.Add(sel.GetRange(),COleVariant(short(33)),COleVariant("PAGE  "),COleVariant(short(1))); //增加页码域
+	//sel.TypeText(" -");
+	//font.SetSize(6);
+	//font.SetColor(RGB(80,80,80));
+	//para.SetAlignment(1);   //居中
+	sel.TypeText("◎ 你真棒            ◎ 还不错            ◎ 要加油"); 
+	para.SetAlignment(1);   //居中
+	mViewActive.SetSeekView(0); //回到正文视图
+	font.ReleaseDispatch();
+	para.ReleaseDispatch();
+	mViewActive.ReleaseDispatch();
+	mPane.ReleaseDispatch();
+	mWindowActive.ReleaseDispatch();
 
-	//move to end of story
-	wordSelection.EndOf(COleVariant((short)6),COleVariant((short)0));
-	//1.1 RxLev Full 
-	wordSelection.TypeText("1. 统计报告");
-	wordSelection.HomeKey(&CComVariant(5),&CComVariant(1));
-	//Format the line with selection
-	wordFont = wordSelection.GetFont();
-	wordFont.SetBold(9999998);//wdToggle
-	wordSelection.EndOf(&CComVariant(5),&CComVariant(0));
-	wordSelection.TypeParagraph();   
-	wordSelection.TypeText("(1.1). 分段统计");
-	wordSelection.TypeParagraph();
-	wordFont.SetBold(9999998);//wdToggle
-	wordRange=wordSelection.GetRange();
-	//add table
-	//nRow=m_nRange1+1;
-	wordTable=wordTables.Add(wordRange,5/*row*/,4/*column*/,&defaultBehavior,&AutoFitBehavior);
-	wordRange=wordTable.GetRange();
-	//wordRange.MoveEnd(COleVariant((short)15),COleVariant((short)1));
-	//wordRange.Select();
-	//move end of table
-	//wordSelection.EndOf(COleVariant((short)15),COleVariant((short)0));
-	//insert rows
-	//wordSelection.InsertRowsBelow(COleVariant((short)5));
-	//选择第一个单元,进而选择第一行进行格式化
-	wordCell=wordTable.Cell(1,1);
-	wordCell.Select();
-	//select the row with current selection
-	wordSelection.EndKey(&CComVariant(10),&CComVariant(1));
-	//Format the row with selection
-	//wordFont = wordSelection.GetFont();
-	wordFont.SetBold(9999998);//wdToggle
-	wordCells=wordSelection.GetCells();
-	wordShading = wordCells.GetShading();
-	wordShading.SetTexture(0);
-	wordShading.SetBackgroundPatternColor(14737632);//15987699 14737632 adColorBlue
-	wordShading.SetForegroundPatternColor(-16777216);//-16777216 wdColorAutomatic
-	//move to end of table
-	//wordSelection.EndOf(COleVariant((short)15),COleVariant((short)0));
-	//wordParagraph=wordParagraphs.GetLast();
-	//wordRange=wordParagraph.GetRange();
-	//wordRange.MoveEnd(COleVariant((short)4),COleVariant((short)1));     
-	//wordRange.SetText("Test");
-	//wordSelection=wordApp.GetSelection();
-	//wordSelection.MoveEnd(COleVariant((short)6),COleVariant((short)1));
-	wordCell=wordTable.Cell(1,1);
-	wordCell.Select();
-	wordSelection.TypeText("统计项目");
-	wordSelection.MoveRight(&CComVariant(12),&CComVariant(1),&CComVariant(0));
-	wordSelection.TypeText("采样");
-	wordSelection.MoveRight(&CComVariant(12),&CComVariant(1),&CComVariant(0));
-	wordSelection.TypeText("百分比");
-	wordSelection.MoveRight(&CComVariant(12),&CComVariant(1),&CComVariant(0));
-	wordSelection.TypeText("累计百分比");
-	//
-	//
-	wordSelection.EndOf(COleVariant((short)6),COleVariant((short)0));
-	wordSelection.TypeParagraph();   
-	wordSelection.TypeText("(1.2). 分段统计");
-	wordSelection.HomeKey(&CComVariant(5),&CComVariant(1));
-	//Format the line with selection
-	wordFont = wordSelection.GetFont();
-	wordFont.SetBold(9999998);//wdToggle
-	wordSelection.EndOf(&CComVariant(5),&CComVariant(0));
-	wordSelection.TypeParagraph();
-	wordFont.SetBold(9999998);//wdToggle
-	wordRange=wordSelection.GetRange();
-	//add table
-	//nRow=m_nRange1+1;
-	wordTable=wordTables.Add(wordRange,5/*row*/,4/*column*/,&defaultBehavior,&AutoFitBehavior);
-	wordRange=wordTable.GetRange();
-	//选择第一个单元,进而选择第一行进行格式化
-	wordCell=wordTable.Cell(1,1);
-	wordCell.Select();
-	//select the row with current selection
-	wordSelection.EndKey(&CComVariant(10),&CComVariant(1));
-	//Format the row with selection
-	wordFont = wordSelection.GetFont();
-	wordFont.SetBold(9999998);
-	wordCells=wordSelection.GetCells();
-	wordShading = wordCells.GetShading();
-	wordShading.SetTexture(0);
-	wordShading.SetBackgroundPatternColor(14737632);//15987699
-	wordShading.SetForegroundPatternColor(-16777216);
-	wordCell=wordTable.Cell(1,1);
-	wordCell.Select();
-	wordSelection.TypeText("Range");
-	wordSelection.MoveRight(&CComVariant(12),&CComVariant(1),&CComVariant(0));
-	wordSelection.TypeText("Samples");
-	wordSelection.MoveRight(&CComVariant(12),&CComVariant(1),&CComVariant(0));
-	wordSelection.TypeText("Percentage");
-	wordSelection.MoveRight(&CComVariant(12),&CComVariant(1),&CComVariant(0));
-	wordSelection.TypeText("Calculation");
-	//
-	//Save document as report
-	SYSTEMTIME sysTime;
-	GetLocalTime(&sysTime);
-	CString strReport;
-	strReport.Format("%d年-%d月-%d日 %d-%d-%d 报告",sysTime.wYear,sysTime.wMonth,
-		  sysTime.wDay,sysTime.wHour,sysTime.wMinute,sysTime.wSecond);
-	strReport=strPath+""""+strReport;
-	wordDoc.SaveAs(COleVariant(strReport),COleVariant((short)0),vOpt,vOpt,vOpt,vOpt,vOpt,vOpt
-		  ,vOpt,vOpt,vOpt,vOpt,vOpt,vOpt,vOpt,vOpt);
-	//Release com
-	wordFont.ReleaseDispatch();
-	wordCells.ReleaseDispatch();
-	wordShading.ReleaseDispatch();
-	wordTable.ReleaseDispatch();
-	wordTables.ReleaseDispatch();
-	wordRange.ReleaseDispatch();
-	wordSelection.ReleaseDispatch();
-	wordDoc.RecheckSmartTags();
-	wordDocs.ReleaseDispatch();
-	wordApp.ReleaseDispatch();
+	::GetModuleFileName(NULL,buff,sizeof(buff));
+	msg = buff;
+
+	int nPos=msg.ReverseFind('\\')+1;
+	msg=msg.Left(nPos)+lpszFileName;
+ 
+	saveDoc.SaveAs(COleVariant(msg),COleVariant((short)0),vOpt,vOpt,vOpt,vOpt,vOpt,vOpt
+              ,vOpt,vOpt,vOpt,vOpt,vOpt,vOpt,vOpt,vOpt);
+
+	//app.SetVisible(TRUE);  
+	borders.ReleaseDispatch();
+	table.ReleaseDispatch();  
+	tables.ReleaseDispatch();  
+	sel.ReleaseDispatch();  
+	docs.ReleaseDispatch();  
+	saveDoc.ReleaseDispatch();  
+	app.ReleaseDispatch();  
 	::CoUninitialize();
 }
 
