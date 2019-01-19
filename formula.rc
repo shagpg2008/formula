@@ -147,7 +147,7 @@ BEGIN
                     188,167,29,10
     GROUPBOX        "保存格式",IDC_STATIC,10,185,212,24
     CONTROL         "EXCEL表格",IDC_IS_EXCEL,"Button",BS_AUTORADIOBUTTON | 
-                    WS_DISABLED | WS_GROUP,15,196,52,10
+                    WS_GROUP,15,196,52,10
     CONTROL         "WORD文档",IDC_IS_WORD,"Button",BS_AUTORADIOBUTTON,70,
                     196,48,10
     CONTROL         "TXT文本",IDC_IS_TXT,"Button",BS_AUTORADIOBUTTON,121,196,
@@ -176,8 +176,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,0,1
- PRODUCTVERSION 1,0,0,1
+ FILEVERSION 1,0,0,0
+ PRODUCTVERSION 1,0,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -190,17 +190,20 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-        BLOCK "080404B0"
+        BLOCK "080404b0"
         BEGIN
+            VALUE "Comments", "\0"
             VALUE "CompanyName", "\0"
-            VALUE "FileDescription", "formula Microsoft 基础类应用程序\0"
-            VALUE "FileVersion", "1, 0, 0, 1\0"
+            VALUE "FileDescription", "小学数学算式产生器\0"
+            VALUE "FileVersion", "1, 0, 0, 0\0"
             VALUE "InternalName", "formula\0"
             VALUE "LegalCopyright", "版权所有 (C) 2018\0"
             VALUE "LegalTrademarks", "\0"
             VALUE "OriginalFilename", "formula.EXE\0"
+            VALUE "PrivateBuild", "\0"
             VALUE "ProductName", "formula 应用程序\0"
-            VALUE "ProductVersion", "1, 0, 0, 1\0"
+            VALUE "ProductVersion", "1, 0, 0, 0\0"
+            VALUE "SpecialBuild", "\0"
         END
     END
     BLOCK "VarFileInfo"
@@ -301,7 +304,7 @@ END
 
 STRINGTABLE DISCARDABLE 
 BEGIN
-    IDS_ABOUTBOX            "关于 formula(&A)..."
+    IDS_ABOUTBOX            "关于 算式产生器(&A)..."
 END
 
 #endif    // Chinese (P.R.C.) resources

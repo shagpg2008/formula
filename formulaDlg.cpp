@@ -6,7 +6,8 @@
 #include "formulaDlg.h"
 #include"comdef.h"
 #include"atlbase.h"
-#include "msword.h" 
+#include "msword.h"
+#include "excel.h" 
 
 #include "core.h"
 #include <iostream>
@@ -432,6 +433,132 @@ void CFormulaDlg::writeFormulaToHtmlFile(int maxOfFormula, LPSTR lpszFileName, i
 
 void CFormulaDlg::writeFormulaToExcelFile(int maxOfFormula, LPSTR lpszFileName, int maxFileNameLen)
 {
+	if (FAILED(::CoInitialize(NULL)))
+    {
+         AfxMessageBox("Initialize COM context failed!");
+         return ;
+    }
+
+	msexcel::_Application app;
+	if(!app.CreateDispatch("Excel.Application",NULL))
+	{
+		AfxMessageBox("创建Excel服务失败!"); 
+		return;
+	}
+
+	
+	char buff[256] = {0};
+	map<string, int> formulaMap;
+	map<string, int>::iterator it;
+	int numOfFormulaPerLine = atoi(m_numOfFormulaPerLine);
+	int numOfFormulaPerPage = atoi(m_numOfFormulaPerPage);
+	strncat(lpszFileName, ".xls", maxFileNameLen);
+	CString msg = _T("");
+
+	getTitle(buff, sizeof(buff));
+
+	msexcel::Workbooks books;
+	msexcel::_Workbook book;
+	msexcel::Sheets sheets; 
+	msexcel::_Worksheet sheet;
+
+	msexcel::Range range;
+	msexcel::Font font;
+	msexcel::Range cols;
+	COleVariant covOptional((long)DISP_E_PARAMNOTFOUND, VT_ERROR);
+	books=app.GetWorkbooks();
+	book=books.Add(covOptional);
+	sheets=book.GetSheets();
+	sheet=sheets.GetItem(COleVariant((short)1));
+	sheet.SetName(buff);
+	range.AttachDispatch(sheet.GetCells(),TRUE);
+	
+	msexcel::PageSetup pageup = sheet.GetPageSetup();
+	msg = "&20 ";
+	msg += buff;
+	pageup.SetCenterHeader(msg);msg="";
+	pageup.SetRightHeader("用时_______ 得分_______");
+	pageup.SetCenterFooter("◎ 你真棒            ◎ 还不错            ◎ 要加油");
+	pageup.ReleaseDispatch();
+
+
+	for(int index = 0, row = 1, col = 1; index < maxOfFormula; index ++, msg = "") {
+		BOOL isNeedPageBreak = (index == (maxOfFormula - 1)) || (numOfFormulaPerPage == 0) || (index % numOfFormulaPerPage) != (numOfFormulaPerPage - 1)?FALSE:TRUE;
+		int lineNum = index + 1;
+		genAnFormula(buff, sizeof(buff), m_whichNumBlank);
+
+		if((it=formulaMap.find(buff)) != formulaMap.end()) {
+			if(index - (it->second) <= 20) {
+				index--;
+				continue;
+			}
+			it->second = index;
+		} else {
+			formulaMap[buff] = index;
+		}
+
+		if(m_isNumberNeeded ) {
+			if(m_isNumRestartPerPage) {
+				lineNum = (index % numOfFormulaPerPage) + 1;
+			}
+			char lineBuff[8] = {0};
+			msg += itoa(lineNum, lineBuff, 10);
+			msg += _T(". ");
+		}
+
+		msg += buff;
+		range.SetItem(_variant_t((long)row),_variant_t((long)col++),_variant_t(msg));
+
+		if(col > numOfFormulaPerLine) {
+			col = 1;
+			row ++;
+		}
+		
+		if(isNeedPageBreak) {
+			sprintf(buff, "A%d", row);
+			msexcel::Range br = sheet.GetRange(COleVariant(buff),COleVariant(buff));
+			br.SetPageBreak(1); 
+			br.ReleaseDispatch();
+			formulaMap.clear();
+		}
+	}
+	
+/*
+	range.SetValue2(COleVariant("HELLO EXCEL!"));//SetValue2
+	font=range.GetFont();
+	font.SetBold(COleVariant((short)TRUE));
+	range=sheet.GetRange(COleVariant("A2"),COleVariant("A2"));
+	// range.SetFormula(COleVariant("=RAND()*100000"));
+	range.SetFormula(COleVariant("100000"));
+	range.SetNumberFormat(COleVariant("$0.00"));
+*/	cols=range.GetEntireColumn();
+	cols.SetColumnWidth(COleVariant(84.0/numOfFormulaPerLine));
+	//cols.AutoFit();
+	cols.ReleaseDispatch();
+	cols=range.GetRows();
+	cols.SetRowHeight((_variant_t)((float)26));
+	
+	//app.SetVisible(TRUE);
+	app.SetUserControl(TRUE);
+
+	::GetModuleFileName(NULL,buff,sizeof(buff));
+	msg = buff;
+
+	int nPos=msg.ReverseFind('\\')+1;
+	msg=msg.Left(nPos)+lpszFileName;
+	book.SaveAs(COleVariant(msg),COleVariant((short)0),covOptional,covOptional,covOptional,covOptional,0,covOptional
+              ,covOptional,covOptional,covOptional,covOptional);
+
+	cols.ReleaseDispatch();
+	range.ReleaseDispatch();
+	font.ReleaseDispatch();
+	sheet.ReleaseDispatch();
+	sheets.ReleaseDispatch();
+	book.ReleaseDispatch();
+	books.ReleaseDispatch();
+	app.ReleaseDispatch();
+	app.Quit(); 
+	::CoUninitialize();
 }
 
 void CFormulaDlg::writeFormulaToWordFile(int maxOfFormula, LPSTR lpszFileName, int maxFileNameLen)
@@ -456,7 +583,6 @@ void CFormulaDlg::writeFormulaToWordFile(int maxOfFormula, LPSTR lpszFileName, i
 	COleVariant vTrue((short)TRUE), vFalse((short)FALSE),vOpt((long)DISP_E_PARAMNOTFOUND, VT_ERROR);  
 	app.CreateDispatch(_T("Word.Application"));  
 	app.SetVisible(FALSE);  
-	//Create New Doc  
 	Documents docs=app.GetDocuments();  
 	CComVariant tpl(_T("")),Visble,DocType(0),NewTemplate(false);  
 	docs.Add(&tpl,&NewTemplate,&DocType,&Visble);  
@@ -465,14 +591,14 @@ void CFormulaDlg::writeFormulaToWordFile(int maxOfFormula, LPSTR lpszFileName, i
 	//Add Table  
 	_Document saveDoc=app.GetActiveDocument();  
 	Tables tables=saveDoc.GetTables();  
-	CComVariant defaultBehavior(1),AutoFitBehavior(1);  
+	CComVariant defaultBehavior(1),AutoFitBehavior(2 /*wdAutoFitWindow*/);  
 	Table table = tables.Add(sel.GetRange(),(numOfFormulaPerPage+numOfFormulaPerLine-1)/numOfFormulaPerLine,numOfFormulaPerLine,&defaultBehavior,&AutoFitBehavior);  
-	
+
 	//Table table=tables.Item(1);  
 	Borders borders = table.GetBorders();
 	borders.SetEnable(FALSE);
 	Rows rows = table.GetRows();
-	rows.SetHeight(app.InchesToPoints((float)0.35), 2);
+	rows.SetHeight(26/*app.InchesToPoints((float)0.35), 2*/);
 	rows.ReleaseDispatch();
 
 	for(int index = 0, row = 1, col = 1; index < maxOfFormula; index ++, msg = "") {
@@ -512,7 +638,7 @@ void CFormulaDlg::writeFormulaToWordFile(int maxOfFormula, LPSTR lpszFileName, i
 			borders = table.GetBorders();
 			borders.SetEnable(FALSE);
 			Rows rows = table.GetRows();
-			rows.SetHeight(app.InchesToPoints((float)0.35), 2);
+			rows.SetHeight(26);
 			rows.ReleaseDispatch();
 			formulaMap.clear();
 		}
@@ -520,7 +646,6 @@ void CFormulaDlg::writeFormulaToWordFile(int maxOfFormula, LPSTR lpszFileName, i
 
 	Paragraph para = sel.GetParagraphs();
 //	Fields fields;
-
 	Window   mWindowActive = app.GetActiveWindow();;
 	Pane   mPane = mWindowActive.GetActivePane();
 	View   mViewActive = mPane.GetView(); 
@@ -571,6 +696,9 @@ void CFormulaDlg::writeFormulaToWordFile(int maxOfFormula, LPSTR lpszFileName, i
 	docs.ReleaseDispatch();  
 	saveDoc.ReleaseDispatch();  
 	app.ReleaseDispatch();  
+
+	CComVariant saveChanges(false),originalFormat,routeDocument;
+	app.Quit(&saveChanges, &originalFormat, &routeDocument);
 	::CoUninitialize();
 }
 

@@ -55,6 +55,10 @@ LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
 # ADD LINK32 /nologo /subsystem:windows /machine:I386 /out:"Release/小学数学产生器.exe"
 # SUBTRACT LINK32 /map /debug
+# Begin Special Build Tool
+SOURCE="$(InputPath)"
+PostBuild_Cmds=upx Release\小学数学产生器.exe
+# End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "formula - Win32 Debug"
 
@@ -105,6 +109,10 @@ SOURCE=.\core.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\excel.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\formula.cpp
 # End Source File
 # Begin Source File
@@ -131,6 +139,10 @@ SOURCE=.\StdAfx.cpp
 # Begin Source File
 
 SOURCE=.\core.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\excel.h
 # End Source File
 # Begin Source File
 
