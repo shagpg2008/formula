@@ -69,12 +69,30 @@ static unsigned int getOpNum(unsigned int max, unsigned int *num, unsigned int o
 	switch(operators[op]) {
 	case OP_ADD:
 		theOtherNum = GET_0_N(max - *num);
+		if(!isAddShift) {
+			unsigned char low1 = (*num)%10, low2 = (theOtherNum % 10), tmp = low1+low2;
+			if(tmp >= 10) {
+				tmp -= 10-1;
+				theOtherNum -= tmp;
+			}
+		}
 		break;
 	case OP_MINUS:
 		if(*num == 0) {
 			theOtherNum = 0;
 		} else {
 			theOtherNum = GET_0_N(*num)+1;
+			if(!isAbdicate) {
+				unsigned char low1 = (*num)%10, low2 = (theOtherNum % 10), tmp = 0;
+				if(low1 < low2) {
+					tmp = low2 - low1;
+					if(low1 > 0) {
+						tmp ++;
+					}
+
+					theOtherNum -= tmp;
+				}
+			}
 		}
 		break;
 	case OP_MULTI:

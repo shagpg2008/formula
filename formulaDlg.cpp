@@ -532,7 +532,7 @@ void CFormulaDlg::writeFormulaToExcelFile(int maxOfFormula, LPSTR lpszFileName, 
 	range.SetFormula(COleVariant("100000"));
 	range.SetNumberFormat(COleVariant("$0.00"));
 */	cols=range.GetEntireColumn();
-	cols.SetColumnWidth(COleVariant(84.0/numOfFormulaPerLine));
+	cols.SetColumnWidth(COleVariant(82.0/numOfFormulaPerLine));
 	//cols.AutoFit();
 	cols.ReleaseDispatch();
 	cols=range.GetRows();
@@ -546,7 +546,7 @@ void CFormulaDlg::writeFormulaToExcelFile(int maxOfFormula, LPSTR lpszFileName, 
 
 	int nPos=msg.ReverseFind('\\')+1;
 	msg=msg.Left(nPos)+lpszFileName;
-	book.SaveAs(COleVariant(msg),COleVariant((short)0),covOptional,covOptional,covOptional,covOptional,0,covOptional
+	book.SaveAs(COleVariant(msg),COleVariant((short)56/*xlExcel8*/),covOptional,covOptional,covOptional,covOptional,1/*xlNoChange*/,covOptional
               ,covOptional,covOptional,covOptional,covOptional);
 
 	cols.ReleaseDispatch();
@@ -685,7 +685,7 @@ void CFormulaDlg::writeFormulaToWordFile(int maxOfFormula, LPSTR lpszFileName, i
 	int nPos=msg.ReverseFind('\\')+1;
 	msg=msg.Left(nPos)+lpszFileName;
  
-	saveDoc.SaveAs(COleVariant(msg),COleVariant((short)0),vOpt,vOpt,vOpt,vOpt,vOpt,vOpt
+	saveDoc.SaveAs(COleVariant(msg),COleVariant((short)0),vOpt,vOpt,vOpt,vOpt, vTrue,vOpt
               ,vOpt,vOpt,vOpt,vOpt,vOpt,vOpt,vOpt,vOpt);
 
 	//app.SetVisible(TRUE);  
