@@ -41,6 +41,8 @@ public:
 	int		m_whichNumBlank;
 	int		m_divReminderNum;
 	BOOL	m_isBracketPriority;
+	int		m_isAdicateOnly;
+	int		m_isShiftOnly;
 	//}}AFX_DATA
 
 	// ClassWizard generated virtual function overrides
@@ -71,8 +73,11 @@ protected:
 	virtual void OnOK();
 	afx_msg void OnCheckNumberNeeded();
 	afx_msg void OnSelchangeComboNumOfOperators();
+	afx_msg void OnSelchangeComboMaxNumOfAdd();
 	virtual void OnCancel();
 	afx_msg void OnClose();
+	afx_msg void OnIsAddShiftIncluded();
+	afx_msg void OnIsIncludeAbdicate();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

@@ -36,6 +36,8 @@
 #define IDC_IS_HAS_REMINDER             1028
 #define IDC_RADIO_HTML                  1029
 #define IDC_CHECK_BRACKET               1030
+#define IDC_COMBO_IS_SHIFT_ONLY         1031
+#define IDC_COMBO_IS_ADICATE_ONLY       1032
 
 // Next default values for new objects
 // 
@@ -43,7 +45,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        135
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1031
+#define _APS_NEXT_CONTROL_VALUE         1032
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

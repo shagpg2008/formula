@@ -101,6 +101,8 @@ CFormulaDlg::CFormulaDlg(CWnd* pParent /*=NULL*/)
 	m_whichNumBlank = 0;
 	m_divReminderNum = 0;
 	m_isBracketPriority = FALSE;
+	m_isAdicateOnly = 1;
+	m_isShiftOnly = 1;
 	//}}AFX_DATA_INIT
 	// Note that LoadIcon does not require a subsequent DestroyIcon in Win32
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -134,6 +136,8 @@ void CFormulaDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Radio(pDX, IDC_IS_EQUATION, m_whichNumBlank);
 	DDX_Radio(pDX, IDC_IS_NO_REMINDER, m_divReminderNum);
 	DDX_Check(pDX, IDC_CHECK_BRACKET, m_isBracketPriority);
+	DDX_CBIndex(pDX, IDC_COMBO_IS_ADICATE_ONLY, m_isAdicateOnly);
+	DDX_CBIndex(pDX, IDC_COMBO_IS_SHIFT_ONLY, m_isShiftOnly);
 	//}}AFX_DATA_MAP
 }
 
@@ -148,6 +152,9 @@ BEGIN_MESSAGE_MAP(CFormulaDlg, CDialog)
 	ON_BN_CLICKED(IDC_CHECK_DEVIDE, OnCheckDevide)
 	ON_BN_CLICKED(IDC_CHECK_NUMBER_NEEDED, OnCheckNumberNeeded)
 	ON_CBN_SELCHANGE(IDC_COMBO_NUM_OF_OPERATORS, OnSelchangeComboNumOfOperators)
+	ON_CBN_SELCHANGE(IDC_COMBO_MAX_NUM, OnSelchangeComboMaxNumOfAdd)
+	ON_BN_CLICKED(IDC_IS_ADD_SHIFT_INCLUDED, OnIsAddShiftIncluded)
+	ON_BN_CLICKED(IDC_IS_INCLUDE_ABDICATE, OnIsIncludeAbdicate)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -181,6 +188,7 @@ BOOL CFormulaDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
+	core_init_formula();
 	// TODO: Add extra initialization here
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -238,7 +246,14 @@ void CFormulaDlg::OnCheckAdd()
 {
 	UpdateData();
 	GetDlgItem(IDC_COMBO_MAX_NUM)->EnableWindow(m_isAdd);
-	GetDlgItem(IDC_IS_ADD_SHIFT_INCLUDED)->EnableWindow(m_isAdd);
+	GetDlgItem(IDC_IS_ADD_SHIFT_INCLUDED)->EnableWindow(m_isAdd && atoi(m_maxNumStr)!=5);
+	GetDlgItem(IDC_COMBO_IS_SHIFT_ONLY)->EnableWindow(m_isAdd && atoi(m_maxNumStr)!=5 && m_isAddShiftIncluded);
+}
+
+void CFormulaDlg::OnIsAddShiftIncluded() 
+{
+	UpdateData();
+	GetDlgItem(IDC_COMBO_IS_SHIFT_ONLY)->EnableWindow(m_isAddShiftIncluded);
 }
 
 void CFormulaDlg::OnCheckMinus() 
@@ -246,6 +261,13 @@ void CFormulaDlg::OnCheckMinus()
 	UpdateData();
 	GetDlgItem(IDC_COMBO_MAX_NUM_MINUS)->EnableWindow(m_isMinus);
 	GetDlgItem(IDC_IS_INCLUDE_ABDICATE)->EnableWindow(m_isMinus);
+	GetDlgItem(IDC_COMBO_IS_ADICATE_ONLY)->EnableWindow(m_isMinus && m_isIncludeAbdicate);
+}
+
+void CFormulaDlg::OnIsIncludeAbdicate() 
+{
+	UpdateData();
+	GetDlgItem(IDC_COMBO_IS_ADICATE_ONLY)->EnableWindow(m_isIncludeAbdicate);
 }
 
 void CFormulaDlg::OnCheckMultiple() 
@@ -280,6 +302,17 @@ void CFormulaDlg::OnSelchangeComboNumOfOperators()
 		m_divReminderNum = 0;
 		UpdateData(FALSE);
 	}
+}
+
+void CFormulaDlg::OnSelchangeComboMaxNumOfAdd() 
+{
+	UpdateData();
+	BOOL isTrue = atoi(m_maxNumStr)!=5?TRUE:FALSE;
+	if(!isTrue) {
+		m_isAddShiftIncluded = isTrue;
+	}
+	GetDlgItem(IDC_IS_ADD_SHIFT_INCLUDED)->EnableWindow(isTrue);
+	UpdateData(FALSE);
 }
 
 void CFormulaDlg::OnClose() 
@@ -556,8 +589,8 @@ void CFormulaDlg::writeFormulaToExcelFile(int maxOfFormula, LPSTR lpszFileName, 
 	sheets.ReleaseDispatch();
 	book.ReleaseDispatch();
 	books.ReleaseDispatch();
-	app.ReleaseDispatch();
 	app.Quit(); 
+	app.ReleaseDispatch();
 	::CoUninitialize();
 }
 
@@ -695,10 +728,9 @@ void CFormulaDlg::writeFormulaToWordFile(int maxOfFormula, LPSTR lpszFileName, i
 	sel.ReleaseDispatch();  
 	docs.ReleaseDispatch();  
 	saveDoc.ReleaseDispatch();  
-	app.ReleaseDispatch();  
-
 	CComVariant saveChanges(false),originalFormat,routeDocument;
 	app.Quit(&saveChanges, &originalFormat, &routeDocument);
+	app.ReleaseDispatch();
 	::CoUninitialize();
 }
 
@@ -728,7 +760,7 @@ void CFormulaDlg::OnOK()
 
 	core_init_operator(m_isAdd, m_isMinus, m_isMultiple, m_isDevide);
 	core_init_maxnum(atoi(m_maxNumStr), atoi(m_MaxNumOfMinus), atoi(m_MaxNumOfMultiple), atoi(m_MaxNumOfDiv));
-	core_init_misc(atoi(m_numOfOperatorStr)==3, m_isAddShiftIncluded, m_isIncludeAbdicate, m_divReminderNum == 1, m_isBracketPriority);
+	core_init_misc(atoi(m_numOfOperatorStr)==3, m_isAddShiftIncluded,m_isShiftOnly == 1,  m_isIncludeAbdicate, m_isAdicateOnly == 1,  m_divReminderNum == 1, m_isBracketPriority);
 	
 	getFileName(szFileName, MAX_PATH);
 
@@ -751,3 +783,4 @@ void CFormulaDlg::OnOK()
 
 	ShellExecute (NULL,"open",szFileName,NULL,NULL,SW_SHOW);
 }
+
