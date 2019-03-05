@@ -53,11 +53,11 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 /nologo /subsystem:windows /machine:I386
-# ADD LINK32 /nologo /subsystem:windows /machine:I386 /out:"bin/小学口算产生器.exe"
+# ADD LINK32 /nologo /subsystem:windows /machine:I386 /out:"bin/小学数学产生器.exe"
 # SUBTRACT LINK32 /map /debug
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=upx bin\小学口算产生器.exe
+PostBuild_Cmds=upx bin\小学数学产生器.exe
 # End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "formula - Win32 Debug"

@@ -28,9 +28,9 @@ public:
 	BOOL	m_isMinus;
 	BOOL	m_isMultiple;
 	BOOL	m_isNumberNeeded;
-	CString	m_MaxNumOfDiv;
-	CString	m_MaxNumOfMinus;
-	CString	m_MaxNumOfMultiple;
+	int	m_MaxNumOfDiv;
+	int	m_MaxNumOfMultiple;
+	CString	m_MaxNumOfMinus;	
 	CString	m_numOfFormulaPerLine;
 	CString	m_numOfFormulaPerPage;
 	BOOL	m_isAddShiftIncluded;

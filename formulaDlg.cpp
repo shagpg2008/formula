@@ -88,9 +88,9 @@ CFormulaDlg::CFormulaDlg(CWnd* pParent /*=NULL*/)
 	m_isMinus = FALSE;
 	m_isMultiple = FALSE;
 	m_isNumberNeeded = FALSE;
-	m_MaxNumOfDiv = _T("10 ");
+	m_MaxNumOfDiv = MD_TABLE_INTERNAL;
 	m_MaxNumOfMinus = _T("20 ");
-	m_MaxNumOfMultiple = _T("5 ");
+	m_MaxNumOfMultiple = MD_TABLE_INTERNAL;
 	m_numOfFormulaPerLine = _T("4");
 	m_numOfFormulaPerPage = _T("100");
 	m_isAddShiftIncluded = FALSE;
@@ -123,9 +123,9 @@ void CFormulaDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_MINUS, m_isMinus);
 	DDX_Check(pDX, IDC_CHECK_MULTIPLE, m_isMultiple);
 	DDX_Check(pDX, IDC_CHECK_NUMBER_NEEDED, m_isNumberNeeded);
-	DDX_CBString(pDX, IDC_COMBO_MAX_NUM_DIV, m_MaxNumOfDiv);
+	DDX_CBIndex(pDX, IDC_COMBO_MAX_NUM_DIV, m_MaxNumOfDiv);
 	DDX_CBString(pDX, IDC_COMBO_MAX_NUM_MINUS, m_MaxNumOfMinus);
-	DDX_CBString(pDX, IDC_COMBO_MAX_NUM_MULTIPLE, m_MaxNumOfMultiple);
+	DDX_CBIndex(pDX, IDC_COMBO_MAX_NUM_MULTIPLE, m_MaxNumOfMultiple);
 	DDX_Text(pDX, IDC_FORMULA_PER_LINE, m_numOfFormulaPerLine);
 	DDX_Text(pDX, IDC_FORMULA_PER_PAGE, m_numOfFormulaPerPage);
 	DDX_Check(pDX, IDC_IS_ADD_SHIFT_INCLUDED, m_isAddShiftIncluded);
@@ -619,13 +619,23 @@ void CFormulaDlg::writeFormulaToWordFile(int maxOfFormula, LPSTR lpszFileName, i
 	Documents docs=app.GetDocuments();  
 	CComVariant tpl(_T("")),Visble,DocType(0),NewTemplate(false);  
 	docs.Add(&tpl,&NewTemplate,&DocType,&Visble);  
-	Selection sel=app.GetSelection();  
+	Selection sel=app.GetSelection(); 
+	_Font font(sel.GetFont()); 
+	font.SetNameAscii("Microsoft Sans Serif");
+	font.SetSize(12);
 
 	//Add Table  
 	_Document saveDoc=app.GetActiveDocument();  
+	PageSetup pageSetup = saveDoc.GetPageSetup();
+	//pageSetup.SetTopMargin(25.0);
+	//pageSetup.SetBottomMargin(25.0);
+	pageSetup.SetLeftMargin(40.0);
+	pageSetup.SetRightMargin(40.0);
+	pageSetup.ReleaseDispatch();
 	Tables tables=saveDoc.GetTables();  
 	CComVariant defaultBehavior(1),AutoFitBehavior(2 /*wdAutoFitWindow*/);  
 	Table table = tables.Add(sel.GetRange(),(numOfFormulaPerPage+numOfFormulaPerLine-1)/numOfFormulaPerLine,numOfFormulaPerLine,&defaultBehavior,&AutoFitBehavior);  
+	
 
 	//Table table=tables.Item(1);  
 	Borders borders = table.GetBorders();
@@ -685,7 +695,6 @@ void CFormulaDlg::writeFormulaToWordFile(int maxOfFormula, LPSTR lpszFileName, i
 	mViewActive.SetSeekView(9);   //…Ë÷√“≥√º ”Õº
 	getTitle(buff, sizeof(buff));
 	
-	_Font font(sel.GetFont());
 	font.SetSize(15);
 	font.SetColor(RGB(0,0,0));
 	sel.TypeText(buff);
@@ -759,7 +768,7 @@ void CFormulaDlg::OnOK()
 	}
 
 	core_init_operator(m_isAdd, m_isMinus, m_isMultiple, m_isDevide);
-	core_init_maxnum(atoi(m_maxNumStr), atoi(m_MaxNumOfMinus), atoi(m_MaxNumOfMultiple), atoi(m_MaxNumOfDiv));
+	core_init_maxnum(atoi(m_maxNumStr), atoi(m_MaxNumOfMinus), m_MaxNumOfMultiple, m_MaxNumOfDiv);
 	core_init_misc(atoi(m_numOfOperatorStr)==3, m_isAddShiftIncluded,m_isShiftOnly == 1,  m_isIncludeAbdicate, m_isAdicateOnly == 1,  m_divReminderNum == 1, m_isBracketPriority);
 	
 	getFileName(szFileName, MAX_PATH);

@@ -7,6 +7,10 @@
 extern "C" {
 #endif
 
+#define MD_TABLE_INTERNAL 0
+#define MD_AB_C  1
+#define MD_AB_CD 2
+
 void core_init_formula(void);
 void core_init_operator(int isAdd, int isMinus, int isMultiple, int isDevide);
 void core_init_maxnum(unsigned int maxNumOfAdd, unsigned int maxNumOfMinus, unsigned int maxNumOfMultiple, unsigned int maxNumOfDevide);

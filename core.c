@@ -4,7 +4,6 @@
 #include <string.h>
 #include <time.h>
 #include "core.h"
-//#include "equation.h"
 
 #define MAX_OPERATOR 4
 #define OP_ADD 0
@@ -17,7 +16,7 @@ typedef unsigned char EquationType[2];
 #define GET_0_N(n) (n)==0?0:(rand()%(n))
 #define NUM(array) (sizeof(array)/sizeof(array[0]))
 #define MAX_NUM 100
-#define MAX_FORMULA (MAX_NUM*(MAX_NUM+1)/2)
+#define MAX_FORMULA(n) ((n)*((n)+1)/2)
 
 static unsigned int maxNumEquationOfAddShift = 0;
 static unsigned int equationOfAddShiftBase = 0;
@@ -40,6 +39,15 @@ unsigned short eqAddMinusShiftBelowMap[MAX_NUM+1] = {/*no use -->*/0};
 
 enum MAXNUM{MAXNUM5, MAXNUM10, MAXNUM20, MAXNUM100};
 
+/*unsigned char eqMultiDevide[5050 ][2] = {{0,0}
+1x1: 0~45
+11x1: 46~855
+11x11:856-4950
+};
+*/
+
+unsigned char eqMultiDevideBelow100[4952][2] = {{0,0}};
+unsigned short eqMultiDevideBelow100Map[4][2] = {{1,46}, {47,810}, {857,4095}};
 
 static char isThreeNumbers = 0, isAddShift = 0, isAddShiftOnly = 0, isAbdicate = 0, isAbdicateOnly = 0,hasReminder = 0, hasBracketPriority = 0;
 static char numOfOperators = 0;
@@ -61,8 +69,24 @@ static int getMaxNumIndex(unsigned int max)
 
 static unsigned int getNumBetween(unsigned int min, unsigned max)
 {
-	unsigned int num = rand();
+	unsigned int num = 0;
+	if(max <= min) {
+		return 0;
+	}
+	num = rand();
+	max -= min;
+	return min + (num%max);
+}
 
+static void genMultiDevideEq(int min1, int max1, int min2, int max2)
+{
+	static int index = 1;
+	int i = 0, j = 0;
+	for(i = min1; i < max1; i++)
+		for(j = min2; j <= i && j < max2; j++) {
+			eqMultiDevideBelow100[index][0] = i;
+			eqMultiDevideBelow100[index++][1] = j;
+		}
 }
 
 void core_init_formula(void)
@@ -85,6 +109,10 @@ void core_init_formula(void)
 			}
 		}
 	}
+
+	genMultiDevideEq(1, 10, 1, 10);
+	genMultiDevideEq(10, 100, 1, 10);
+	genMultiDevideEq(10, 100, 10, 100);
 }
 
 
@@ -223,6 +251,17 @@ static EquationType *getAddMinusEquation(unsigned int op)
 	}
 
 	return NULL;
+}
+
+static EquationType *getMultiDevideEquation(unsigned int op)
+{
+	static EquationType eq = {0,0};
+	unsigned int index = 0, max = 0, randx = rand(), mapIndex = maxNums[op];
+
+	index = eqMultiDevideBelow100Map[mapIndex][0];
+	max   = eqMultiDevideBelow100Map[mapIndex][1];
+	index += randx%max;
+	return &eqMultiDevideBelow100[index];
 }
 
 static unsigned int getNum(unsigned int max)
@@ -374,18 +413,24 @@ void getTitle(char *szTitle, int len)
 	}
 }
 
-//-´øÀ¨ºÅÃ»ÓÐ
 void genAnFormula(char *buff, int len, int blankN)
 {
 	const char *lpRack = "(¡¡¡¡)";
+	const char *lpRes  = blankN==0?"":lpRack;
 	char op = getOp(), op2 = isThreeNumbers?getOp():-1;
 	unsigned int num1 = 0, num2 = 0, num3 = 0, result = 0;
 	unsigned int reminder = 0, hasReminderInThisFormula = 0, hasBracketPriorityInThisFormula = 0, priorityN = 0;
-	EquationType *lpEqType = getAddMinusEquation(operators[op]);
+	EquationType *lpEqType = NULL;
 	char num1Str[8] = {0};
 	char num2Str[8] = {0};
 	char num3Str[8] = {0};
 	char resStr[8]  = {0};
+
+	if(operators[op] == OP_MULTI || operators[op] == OP_DEVIDE ) {
+		lpEqType = getMultiDevideEquation(operators[op]);
+	} else {
+		lpEqType = getAddMinusEquation(operators[op]);
+	}
 	
 	if(operators[op] == OP_ADD) {
 		if(rand()%2) {
@@ -398,6 +443,18 @@ void genAnFormula(char *buff, int len, int blankN)
 	}else if(operators[op] == OP_MINUS){
 		num1 = (*lpEqType)[0] + (*lpEqType)[1];
 		num2 = rand()%2?(*lpEqType)[1]:(*lpEqType)[0];
+	} else if(operators[op] == OP_MULTI){
+		if(rand()%2) {
+			num1 = (*lpEqType)[0];
+			num2 = (*lpEqType)[1];
+		} else {
+			num1 = (*lpEqType)[1];
+			num2 = (*lpEqType)[0];
+		}
+	} else if(operators[op] == OP_DEVIDE){
+		int randx = rand();
+		num1 = (*lpEqType)[0] * (*lpEqType)[1];
+		num2 = randx%2?(*lpEqType)[1]:(*lpEqType)[0];
 	} else {
 		num1 = getNum(maxNums[operators[op]]);
 		num2 = getOpNum(maxNums[operators[op]], &num1, op);
@@ -414,7 +471,7 @@ void genAnFormula(char *buff, int len, int blankN)
 	} 
 	
 	if(!hasReminderInThisFormula && isThreeNumbers) {
-		unsigned int max = 0;
+		unsigned int max = maxNums[operators[op2]];
 		//op2 = getOp();
 
 		if(hasBracketPriority){
@@ -424,10 +481,9 @@ void genAnFormula(char *buff, int len, int blankN)
 			priorityN %= 2;
 		}
 	
-		max = maxNums[operators[op2]];
 		if(hasBracketPriorityInThisFormula) {
 			unsigned int tmp = result;
-			num3 = getOpNum(max, &tmp, op2);
+		//	num3 = getOpNum(max, &tmp, op2);
 
 			if(priorityN == 0) {
 				if(operators[op2] == OP_DEVIDE && tmp > result) {
@@ -466,24 +522,13 @@ void genAnFormula(char *buff, int len, int blankN)
 		}else
 
 		switch(operators[op2]) {
-			case OP_ADD: {
-				if(operators[op] == OP_ADD){ //| operators[op] == OP_MINUS) {
-				//	x
-				}
-
-				if(max <  result) {
-					result = 0;
-				}
-				num3 = max==0?0:getOpNum(max, &result, op2);
-				result = getResult(result, num3, op2);
-				break;
-			}
+			case OP_ADD:
 			case OP_MINUS:{
-				max = min(result, max);
-				num3 = getOpNum(max, &max, op2);
+				num3 = getOpNum(max, &result, op2);
 				result = getResult(result, num3, op2);
 				break;
 			}
+			
 			case OP_MULTI: {
 				num3 = getOpNum(maxNums[OP_MULTI], &num2, op2);
 				if(operators[op] == OP_ADD || operators[op] == OP_MINUS ) {
@@ -537,7 +582,7 @@ void genAnFormula(char *buff, int len, int blankN)
 						blankN==2?lpRack:itoa(num2, num2Str, 10),
 						getOpStr(op2),
 						blankN==3?lpRack:itoa(num3, num3Str, 10),
-						blankN==0?lpRack:itoa(result, resStr, 10)
+						blankN==0?lpRes:itoa(result, resStr, 10)
 					);
 				} else {
 					_snprintf(buff, len, "%s %s (%s %s %s) = %s", 
@@ -546,7 +591,7 @@ void genAnFormula(char *buff, int len, int blankN)
 						blankN==2?lpRack:itoa(num2, num2Str, 10),
 						getOpStr(op2),
 						blankN==3?lpRack:itoa(num3, num3Str, 10),
-						blankN==0?lpRack:itoa(result, resStr, 10)
+						blankN==0?lpRes:itoa(result, resStr, 10)
 					);
 				}
 			} else {
@@ -556,7 +601,7 @@ void genAnFormula(char *buff, int len, int blankN)
 					blankN==2?lpRack:itoa(num2, num2Str, 10),
 					getOpStr(op2),
 					blankN==3?lpRack:itoa(num3, num3Str, 10),
-					blankN==0?lpRack:itoa(result, resStr, 10)
+					blankN==0?lpRes:itoa(result, resStr, 10)
 				);
 			}
 		} else {
@@ -564,7 +609,7 @@ void genAnFormula(char *buff, int len, int blankN)
 				blankN==1?lpRack:itoa(num1, num1Str, 10),
 				getOpStr(op),
 				blankN==2?lpRack:itoa(num2, num2Str, 10),
-				blankN==0?lpRack:itoa(result, resStr, 10)
+				blankN==0?lpRes:itoa(result, resStr, 10)
 			);
 		}
 	} else {
